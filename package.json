@@ -1,0 +1,24 @@
+{
+  "name": "url_shortner",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "backend": "npm run dev --workspace=apps/backend",
+    "frontend": "npm run dev --workspace=apps/frontend"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Keerthi-vassan/URL_shortner.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Keerthi-vassan/URL_shortner/issues"
+  },
+  "homepage": "https://github.com/Keerthi-vassan/URL_shortner#readme"
+}
