@@ -1,14 +1,18 @@
+const dotenv = require("dotenv");
+dotenv.config();
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
 
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
+const urlRoutes = require("./routes/url.js");
+
+app.use("/api/urls",urlRoutes);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok", message: "URL Shortener API is running" });
