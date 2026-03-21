@@ -4,7 +4,8 @@
   "description": "",
   "private": true,
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "services/*"
   ],
   "scripts": {
     "backend": "npm run dev --workspace=apps/backend",

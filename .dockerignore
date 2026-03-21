@@ -1,5 +1,8 @@
 .env
 node_modules
 apps/backend/.env
-apps/frontend/node_modules
 apps/frontend/.env
+apps/frontend/node_modules
+services/shortener/.env
+services/redirect/.env
+services/analytics/.env

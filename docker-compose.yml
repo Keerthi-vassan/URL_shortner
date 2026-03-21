@@ -17,19 +17,92 @@ services:
       timeout: 5s
       retries: 5
 
-  backend:
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: url_shortener_kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  gateway:
     build:
       context: .
       dockerfile: apps/backend/Dockerfile
-    container_name: url_shortener_backend
+    container_name: url_shortener_gateway
     restart: always
     ports:
       - "3000:3000"
     environment:
       PORT: 3000
+      SHORTENER_URL: http://shortener:3001
+      REDIRECT_URL: http://redirect:3002
+    depends_on:
+      - shortener
+      - redirect
+
+  shortener:
+    build:
+      context: .
+      dockerfile: services/shortener/Dockerfile
+    container_name: url_shortener_shortener
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/url_shortener
     depends_on:
       postgres:
+        condition: service_healthy
+
+  redirect:
+    build:
+      context: .
+      dockerfile: services/redirect/Dockerfile
+    container_name: url_shortener_redirect
+    restart: always
+    ports:
+      - "3002:3002"
+    environment:
+      PORT: 3002
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/url_shortener
+      KAFKA_BROKER: kafka:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  analytics:
+    build:
+      context: .
+      dockerfile: services/analytics/Dockerfile
+    container_name: url_shortener_analytics
+    restart: always
+    ports:
+      - "3003:3003"
+    environment:
+      PORT: 3003
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/url_shortener
+      KAFKA_BROKER: kafka:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
 
   frontend:
@@ -41,7 +114,7 @@ services:
     ports:
       - "5173:5173"
     depends_on:
-      - backend
+      - gateway
 
 volumes:
   postgres_data:
