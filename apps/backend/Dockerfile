@@ -9,11 +9,8 @@ RUN npm install
 
 COPY apps/backend/ ./apps/backend/
 
-WORKDIR /app/apps/backend
-RUN npx prisma generate
-
 WORKDIR /app
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "cd apps/backend && npx prisma migrate deploy && node src/index.js"]
+CMD ["node", "apps/backend/src/index.js"]
